@@ -1,42 +1,37 @@
 #!/usr/bin/python3
-"""Module"""
+"""Script that gets user data (Todo list) from API
+and then export the result to csv file. """
 
 import json
 import requests
 
 
-def get_employee_task(employee_id):
-    """Doc"""
-    user_url = "https://jsonplaceholder.typicode.com/users/{}" \
-        .format(employee_id)
+def main():
+    """main function"""
+    todo_url = 'https://jsonplaceholder.typicode.com/todos'
 
-    user_info = requests.request('GET', user_url).json()
+    response = requests.get(todo_url)
 
-    employee_username = user_info["username"]
-    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos/" \
-        .format(employee_id)
-    todos_info = requests.request('GET', todos_url).json()
-    return [
-        dict(zip(["task", "completed", "username"],
-                 [task["title"], task["completed"], employee_username]))
-        for task in todos_info]
+    output = {}
 
+    for todo in response.json():
+        user_id = todo.get('userId')
+        if user_id not in output.keys():
+            output[user_id] = []
+            user_url = 'https://jsonplaceholder.typicode.com/users/{}'.format(
+                user_id)
+            user_name = requests.get(user_url).json().get('username')
 
-def get_employee_ids():
-    """Doc"""
-    users_url = "https://jsonplaceholder.typicode.com/users/"
+        output[user_id].append(
+            {
+                "username": user_name,
+                "task": todo.get('title'),
+                "completed": todo.get('completed')
+            })
 
-    users_info = requests.request('GET', users_url).json()
-    ids = list(map(lambda user: user["id"], users_info))
-    return ids
+    with open("todo_all_employees.json", 'w') as file:
+        json.dump(output, file)
 
 
 if __name__ == '__main__':
-
-    employee_ids = get_employee_ids()
-
-    with open('todo_all_employees.json', "w") as file:
-        all_users = {}
-        for employee_id in employee_ids:
-            all_users[str(employee_id)] = get_employee_task(employee_id)
-        file.write(json.dumps(all_users))
+    main()
