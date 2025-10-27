@@ -29,20 +29,18 @@ if __name__ == "__main__":
     base_url = "https://jsonplaceholder.typicode.com"
 
     # Fetch user information
-    user_url = f"{base_url}/users/{employee_id}"
-    user_response = requests.get(user_url)
+    user_response = requests.get(f"{base_url}/users/{employee_id}")
+    user_response.raise_for_status()
     user_data = user_response.json()
     username = user_data.get("username")
 
-    # Fetch user's todo list
-    todos_url = f"{base_url}/todos?userId={employee_id}"
-    todos_response = requests.get(todos_url)
+    # Fetch user's TODO list
+    todos_response = requests.get(f"{base_url}/todos?userId={employee_id}")
+    todos_response.raise_for_status()
     todos_data = todos_response.json()
 
-    # File name is <employee_id>.csv
+    # Write CSV file named <USER_ID>.csv
     filename = f"{employee_id}.csv"
-
-    # Write CSV file
     with open(filename, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
         for task in todos_data:
