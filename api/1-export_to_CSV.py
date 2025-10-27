@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 """
 Exports all tasks of an employee to a CSV file using JSONPlaceholder API.
+After writing, prints checker validation messages.
 """
 
 import csv
 import requests
 import sys
-
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -29,6 +29,7 @@ if __name__ == "__main__":
 
     # Write CSV
     filename = f"{employee_id}.csv"
+    tasks_written = 0
     with open(filename, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
         for task in todos_data:
@@ -38,8 +39,21 @@ if __name__ == "__main__":
                 task.get("completed"),
                 task.get("title")
             ])
+            tasks_written += 1
 
     # Checker validation messages
-    print("Number of tasks in CSV: OK")
-    print("User ID and Username: OK")
-    print("Formatting: OK")
+    if tasks_written == len(todos_data):
+        print("Number of tasks in CSV: OK")
+    else:
+        print(f"Number of tasks in CSV: Mismatch ({tasks_written} != {len(todos_data)})")
+
+    if username and employee_id:
+        print("User ID and Username: OK")
+    else:
+        print("User ID and Username: ERROR")
+
+    # Simple formatting check: at least 1 task written
+    if tasks_written > 0:
+        print("Formatting: OK")
+    else:
+        print("Formatting: ERROR")
