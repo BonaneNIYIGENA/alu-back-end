@@ -26,14 +26,13 @@ def get_employee_todo_progress(employee_id):
     total_tasks = len(todos_data)
     completed_tasks = sum(1 for task in todos_data if task.get('completed'))
 
-    # Display progress
-    output = f"Employee {employee_name} is done with tasks"
-    output += f"({completed_tasks}/{total_tasks}):"
-    print(output)
+    # Display progress - exact format as required
+    print(f"Employee {employee_name} is done with tasks({completed_tasks}/{total_tasks}):")
 
-    # Display completed tasks
+    # Display completed tasks with exact formatting
     for task in todos_data:
         if task.get('completed'):
+            # Use exactly one tab and one space before task title
             print(f"\t {task.get('title')}")
 
 
