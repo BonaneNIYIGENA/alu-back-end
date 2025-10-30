@@ -1,28 +1,19 @@
 #!/usr/bin/python3
-"""Script to get todos for a user from API"""
+"""Script to get TODO list progress for a given employee"""
 
 import requests
 import sys
 
 
-def main():
-    """main function"""
+if __name__ == "__main__":
     user_id = int(sys.argv[1])
+    user = requests.get(f"https://jsonplaceholder.typicode.com/users/{user_id}").json()
+    todos = requests.get(f"https://jsonplaceholder.typicode.com/users/{user_id}/todos").json()
 
-    user_url = f'https://jsonplaceholder.typicode.com/users/{user_id}'
-    todos_url = f'https://jsonplaceholder.typicode.com/users/{user_id}/todos'
+    completed_tasks = [t for t in todos if t.get("completed") is True]
 
-    user = requests.get(user_url).json()
-    todos = requests.get(todos_url).json()
+    print("Employee {} is done with tasks({}/{}):".format(
+        user.get("name"), len(completed_tasks), len(todos)))
 
-    completed = [t for t in todos if t.get('completed')]
-
-    print("Employee {} is done with tasks({}/{}):"
-          .format(user.get('name'), len(completed), len(todos)))
-
-    for task in completed:
-        print("\t{}".format(task.get('title')))
-
-
-if __name__ == '__main__':
-    main()
+    for task in completed_tasks:
+        print("\t{}".format(task.get("title")))
