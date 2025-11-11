@@ -1,36 +1,35 @@
 #!/usr/bin/python3
-"""Script to get todos for a user from API"""
-
+"""
+Script that fetches TODO list progress for a given employee ID from an API
+"""
 import requests
 import sys
 
 
-def main():
-    """main function"""
-    user_id = int(sys.argv[1])
-    todo_url = 'https://jsonplaceholder.typicode.com/todos'
-    user_url = 'https://jsonplaceholder.typicode.com/users/{}'.format(user_id)
-
-    response = requests.get(todo_url)
-
-    total_questions = 0
-    completed = []
-    for todo in response.json():
-
-        if todo['userId'] == user_id:
-            total_questions += 1
-
-            if todo['completed']:
-                completed.append(todo['title'])
-
-    user_name = requests.get(user_url).json()['name']
-
-    printer = ("Employee {} is done with tasks({}/{}):".format(user_name,
-               len(completed), total_questions))
-    print(printer)
-    for q in completed:
-        print("\t {}".format(q))
-
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        sys.exit(1)
+    
+    employee_id = sys.argv[1]
+    base_url = "https://jsonplaceholder.typicode.com"
+    
+    # Fetch user data
+    user_response = requests.get(f"{base_url}/users/{employee_id}")
+    user_data = user_response.json()
+    employee_name = user_data.get("name")
+    
+    # Fetch todos data
+    todos_response = requests.get(f"{base_url}/todos?userId={employee_id}")
+    todos_data = todos_response.json()
+    
+    # Calculate progress
+    total_tasks = len(todos_data)
+    completed_tasks = [task for task in todos_data if task.get("completed")]
+    number_of_done_tasks = len(completed_tasks)
+    
+    # Print results
+    print(f"Employee {employee_name} is done with tasks"
+          f"({number_of_done_tasks}/{total_tasks}):")
+    
+    for task in completed_tasks:
+        print(f"\t {task.get('title')}")

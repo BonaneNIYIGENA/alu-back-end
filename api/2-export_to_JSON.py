@@ -1,36 +1,40 @@
 #!/usr/bin/python3
-"""Script that gets user data (Todo list) from API
-and then export the result to csv file. """
-
+"""
+Script that exports employee TODO list data to JSON format
+"""
 import json
 import requests
 import sys
 
 
-def main():
-    """main function"""
-    user_id = int(sys.argv[1])
-    todo_url = 'https://jsonplaceholder.typicode.com/todos'
-    user_url = 'https://jsonplaceholder.typicode.com/users/{}'.format(user_id)
-
-    response = requests.get(todo_url)
-    user_name = requests.get(user_url).json().get('username')
-    user_data = []
-    output = {user_id: user_data}
-
-    for todo in response.json():
-        if todo.get('userId') == user_id:
-            user_data.append(
-                {
-                    "task": todo.get('title'),
-                    "completed": todo.get('completed'),
-                    "username": user_name,
-                })
-    print(output)
-    file_name = "{}.json".format(user_id)
-    with open(file_name, 'w') as file:
-        json.dump(output, file)
-
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        sys.exit(1)
+    
+    employee_id = sys.argv[1]
+    base_url = "https://jsonplaceholder.typicode.com"
+    
+    # Fetch user data
+    user_response = requests.get(f"{base_url}/users/{employee_id}")
+    user_data = user_response.json()
+    username = user_data.get("username")
+    
+    # Fetch todos data
+    todos_response = requests.get(f"{base_url}/todos?userId={employee_id}")
+    todos_data = todos_response.json()
+    
+    # Build JSON structure
+    tasks_list = []
+    for task in todos_data:
+        tasks_list.append({
+            "task": task.get("title"),
+            "completed": task.get("completed"),
+            "username": username
+        })
+    
+    json_data = {employee_id: tasks_list}
+    
+    # Write to JSON file
+    filename = f"{employee_id}.json"
+    with open(filename, mode='w') as file:
+        json.dump(json_data, file)
