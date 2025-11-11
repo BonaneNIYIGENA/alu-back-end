@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """
-Script that exports all employees' TODO list data to JSON format
+Script that exports all employee TODO list data to JSON format.
+Uses JSONPlaceholder API to fetch user and todo information.
 """
 import json
 import requests
@@ -8,37 +9,32 @@ import requests
 
 if __name__ == "__main__":
     base_url = "https://jsonplaceholder.typicode.com"
-    
-    # Fetch all users
-    users_response = requests.get(f"{base_url}/users")
-    users_data = users_response.json()
-    
-    # Fetch all todos
-    todos_response = requests.get(f"{base_url}/todos")
-    todos_data = todos_response.json()
-    
-    # Build JSON structure
-    all_employees_data = {}
-    
-    for user in users_data:
+
+    users_response = requests.get("{}/users".format(base_url))
+    users = users_response.json()
+
+    todos_response = requests.get("{}/todos".format(base_url))
+    todos = todos_response.json()
+
+    all_employees = {}
+
+    for user in users:
         user_id = str(user.get("id"))
         username = user.get("username")
-        
-        # Get all tasks for this user
-        user_tasks = [task for task in todos_data 
-                      if task.get("userId") == user.get("id")]
-        
-        tasks_list = []
-        for task in user_tasks:
-            tasks_list.append({
+
+        user_todos = [todo for todo in todos
+                      if todo.get("userId") == int(user_id)]
+
+        task_list = []
+        for todo in user_todos:
+            task_dict = {
                 "username": username,
-                "task": task.get("title"),
-                "completed": task.get("completed")
-            })
-        
-        all_employees_data[user_id] = tasks_list
-    
-    # Write to JSON file
-    filename = "todo_all_employees.json"
-    with open(filename, mode='w') as file:
-        json.dump(all_employees_data, file)
+                "task": todo.get("title"),
+                "completed": todo.get("completed")
+            }
+            task_list.append(task_dict)
+
+        all_employees[user_id] = task_list
+
+    with open("todo_all_employees.json", "w") as json_file:
+        json.dump(all_employees, json_file)

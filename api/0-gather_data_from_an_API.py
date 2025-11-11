@@ -1,58 +1,35 @@
 #!/usr/bin/python3
-"""
-Module for gathering data from an API
-"""
-
+"""Script to gather data from an API for a given employee ID"""
 import requests
 import sys
 
 
-def get_employee_todo_progress(employee_id):
-    """
-    Fetches and displays an employee's TODO list progress
-    
-    Args:
-        employee_id (int): The employee ID
-    
-    Returns:
-        None
-    """
+if __name__ == "__main__":
+    employee_id = sys.argv[1]
+
     # Base URL for the API
     base_url = "https://jsonplaceholder.typicode.com"
-    
-    # Get employee details
-    user_response = requests.get(f"{base_url}/users/{employee_id}")
+
+    # Fetch user data
+    user_url = "{}/users/{}".format(base_url, employee_id)
+    user_response = requests.get(user_url)
     user_data = user_response.json()
-    employee_name = user_data.get('name')
-    
-    # Get employee's todos
-    todos_response = requests.get(f"{base_url}/users/{employee_id}/todos")
-    todos_data = todos_response.json()
-    
-    # Calculate progress
-    total_tasks = len(todos_data)
-    completed_tasks = sum(1 for task in todos_data if task.get('completed'))
-    
-    # Display progress
-    print(f"Employee {employee_name} is done with tasks({completed_tasks}/{total_tasks}):")
-    
-    # Display completed tasks
-    for task in todos_data:
-        if task.get('completed'):
-            print(f"\t {task.get('title')}")
+    employee_name = user_data.get("name")
 
+    # Fetch todos for the employee
+    todos_url = "{}/todos?userId={}".format(base_url, employee_id)
+    todos_response = requests.get(todos_url)
+    todos = todos_response.json()
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 0-gather_data_from_an_API.py <employee_id>")
-        sys.exit(1)
-    
-    try:
-        employee_id = int(sys.argv[1])
-        get_employee_todo_progress(employee_id)
-    except ValueError:
-        print("Employee ID must be an integer")
-        sys.exit(1)
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching data: {e}")
-        sys.exit(1)
+    # Calculate completed tasks
+    completed_tasks = [task for task in todos if task.get("completed")]
+    total_tasks = len(todos)
+    number_of_done_tasks = len(completed_tasks)
+
+    # Print the first line
+    print("Employee {} is done with tasks({}/{}):".format(
+        employee_name, number_of_done_tasks, total_tasks))
+
+    # Print completed task titles
+    for task in completed_tasks:
+        print("\t {}".format(task.get('title')))
